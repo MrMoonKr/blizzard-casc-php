@@ -38,7 +38,7 @@ class Ribbit extends VersionConfig {
             fwrite($handle, $command);
 
             $parser = new MailMimeParser();
-            $message = $parser->parse($handle);
+            $message = $parser->parse($handle, null);
 
             fclose($handle);
 

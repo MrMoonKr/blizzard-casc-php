@@ -115,9 +115,12 @@ function main()
     echo "Output dir: $dest\n";
     echo "Cache dir: $cachePath\n";
 
-    try {
+    try 
+    {
         $ngdp = new CASC\NGDP($cachePath, $wowPath, $program, $region, $locale);
-    } catch (\Exception $e) {
+    } 
+    catch (\Exception $e) 
+    {
         echo $e->getMessage(), "\n";
         return 1;
     }
