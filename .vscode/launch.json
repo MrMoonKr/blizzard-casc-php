@@ -8,7 +8,22 @@
             "name": "Listen for Xdebug",
             "type": "php",
             "request": "launch",
-            "port": 9003
+            "port": 9000,
+            "program": "${workspaceFolder}\\casc.php", //"${file}",
+            "cwd": "${workspaceFolder}", //"${fileDirname}",
+            "runtimeExecutable": "C:\\WinNMP\\bin\\php.bat",
+            "args": [
+                "--files", "dbcs.test.txt",
+                "--out" , "${workspaceFolder}\\out",
+                "--wow", "F:\\myGames\\World of Warcraft"
+            ],
+            "runtimeArgs": [
+                "-dxdebug.start_with_request=yes"
+            ],
+            "env": {
+                "XDEBUG_MODE": "debug,develop",
+                "XDEBUG_CONFIG": "client_port=${port}"
+            }
         },
         {
             "name": "Launch currently open script",

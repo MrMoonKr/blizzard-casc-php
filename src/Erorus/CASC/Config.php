@@ -26,9 +26,11 @@ class Config {
             // Fetch it and cache it.
             foreach ($servers as $server) {
                 $url = Util::buildTACTUrl($server, $cdnPath, 'config', $hash);
-                try {
-                    $data = HTTP::get($url);
-                } catch (\Exception $e) {
+                try 
+                {
+                    $data = HTTP::get( $url );
+                } catch ( \Exception $e ) 
+                {
                     $data = '';
                     echo "\n - " . $e->getMessage() . " ";
                 }

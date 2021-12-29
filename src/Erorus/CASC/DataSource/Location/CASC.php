@@ -7,7 +7,8 @@ use Erorus\CASC\DataSource\Location;
 /**
  * Where a piece of content is located in a local CASC archive.
  */
-class CASC implements Location {
+class CASC implements Location
+{
     /** @var int Which archive file has the content. */
     public $archive;
 
@@ -23,9 +24,12 @@ class CASC implements Location {
     /**
      * @param array $data
      */
-    public function __construct(array $data = []) {
-        foreach ($data as $key => $val) {
-            if (property_exists($this, $key)) {
+    public function __construct( array $data = [] )
+    {
+        foreach ( $data as $key => $val ) 
+        {
+            if ( property_exists( $this, $key ) ) 
+            {
                 $this->{$key} = $val;
             }
         }

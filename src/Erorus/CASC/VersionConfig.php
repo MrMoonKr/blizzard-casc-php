@@ -150,15 +150,19 @@ abstract class VersionConfig {
      *
      * @return string|null
      */
-    protected function getCachedResponse(string $cachePath, ?int $maxAge = null): ?string {
-        if (!$this->cache->fileExists($cachePath)) {
-            return null;
-        }
-        if ($maxAge && $this->cache->fileModified($cachePath) < (time() - $maxAge)) {
+    protected function getCachedResponse( string $cachePath, ?int $maxAge = null ): ?string 
+    {
+        if ( !$this->cache->fileExists( $cachePath ) ) 
+        {
             return null;
         }
 
-        return $this->cache->read($cachePath);
+        if ( $maxAge && $this->cache->fileModified( $cachePath ) < ( time() - $maxAge ) ) 
+        {
+            return null;
+        }
+
+        return $this->cache->read( $cachePath );
     }
 
     /**
@@ -173,38 +177,51 @@ abstract class VersionConfig {
     /**
      * Fetches and parses the CDNs version file into the properties of this object.
      */
-    private function getCDNs(): void {
-        foreach ($this->parseVersionCsv($this->getTACTData('cdns') ?? '') as $row) {
-            if (!isset($row['name'])) {
-                continue;
-            }
-            if ($row['name'] !== $this->region) {
+    private function getCDNs() : void 
+    {
+        foreach ( $this->parseVersionCsv( $this->getTACTData('cdns') ?? '' ) as $row ) 
+        {
+            if ( !isset( $row['name'] ) ) 
+            {
                 continue;
             }
 
-            $this->cdnPath = $row['path'] ?? '';
-            $this->hosts = new HostList(explode(' ', $row['hosts'] ?? ''));
+            if ( $row['name'] !== $this->region ) 
+            {
+                continue;
+            }
+
+            $this->cdnPath  = $row['path'] ?? '';
+            $this->hosts    = new HostList( explode( ' ', $row['hosts'] ?? '' ) );
 
             $servers = [];
-            if (isset($row['servers'])) {
-                foreach (explode(' ', $row['servers']) as $url) {
+            if ( isset( $row['servers'] ) ) 
+            {
+                foreach ( explode( ' ', $row[ 'servers' ] ) as $url ) 
+                {
                     // Strip off the querystring, which seems to be metadata packed into the URL instead of necessary.
-                    if (($pos = strpos($url, '?')) !== false) {
-                        $url = substr($url, 0, $pos);
+                    if ( ( $pos = strpos( $url, '?' ) ) !== false ) 
+                    {
+                        $url = substr( $url, 0, $pos );
                     }
                     // Make sure we always end in a slash, so we can append paths easier.
-                    if (substr($url, -1) !== '/') {
+                    if ( substr( $url, -1 ) !== '/' ) 
+                    {
                         $url .= '/';
                     }
 
                     $servers[] = $url;
                 };
-            } else {
-                foreach (explode(' ', $row['hosts'] ?? '') as $host) {
+            } 
+            else 
+            {
+                foreach ( explode( ' ', $row['hosts'] ?? '' ) as $host ) 
+                {
                     $servers[] = "http://{$host}/";
                 }
             }
-            $this->servers = new HostList($servers);
+
+            $this->servers = new HostList( $servers );
 
             break;
         }
@@ -213,54 +230,69 @@ abstract class VersionConfig {
     /**
      * Fetches and parses the Versions version file into the properties of this object.
      */
-    private function getVersions(): void {
-        foreach ($this->parseVersionCsv($this->getTACTData('versions') ?? '') as $row) {
-            if (!isset($row['region'])) {
-                continue;
-            }
-            if ($row['region'] !== $this->region) {
+    private function getVersions() : void 
+    {
+        foreach ( $this->parseVersionCsv( $this->getTACTData( 'versions' ) ?? '' ) as $row ) 
+        {
+            if ( !isset( $row['region'] ) ) 
+            {
                 continue;
             }
 
-            $this->buildConfig = $row['buildconfig'] ?? '';
-            $this->cdnConfig = $row['cdnconfig'] ?? '';
-            $this->version = $row['versionsname'] ?? '';
+            if ( $row['region'] !== $this->region ) 
+            {
+                continue;
+            }
+
+            $this->buildConfig  = $row['buildconfig'] ?? '';
+            $this->cdnConfig    = $row['cdnconfig'] ?? '';
+            $this->version      = $row['versionsname'] ?? '';
 
             break;
         }
     }
 
     /**
-     * Given Blizzard's special pipe-separated versions file data, returns it formatted into an array of rows, keyed
+     * Given Blizzard's special pipe-separated versions file data, 
+     * returns it formatted into an array of rows, keyed
      * by name.
      *
      * @param string $data
      *
      * @return array[]
      */
-    private function parseVersionCsv(string $data): array {
+    private function parseVersionCsv( string $data ) : array 
+    {
         $result = [];
 
-        $lines = preg_split('/[\r\n]+/', $data);
-        if (strpos($lines[0], '|') === false) {
+        $lines = preg_split( '/[\r\n]+/', $data );
+        if ( strpos( $lines[0], '|' ) === false ) 
+        {
             return [];
         }
-        $cols = explode('|', strtolower($lines[0]));
+
+        $cols = explode( '|', strtolower( $lines[0] ) );
         $names = [];
-        foreach ($cols as $col) {
+        foreach ( $cols as $col ) 
+        {
             $name = $col;
-            if (($pos = strpos($name, '!')) !== false) {
-                $name = substr($name, 0, $pos);
+            if ( ( $pos = strpos( $name, '!' ) ) !== false ) 
+            {
+                $name = substr( $name, 0, $pos );
             }
+
             $names[] = $name;
         }
 
-        for ($x = 1; $x < count($lines); $x++) {
-            $vals = explode('|', $lines[$x]);
-            if (count($vals) != count($names)) {
+        for ( $x = 1 ; $x < count( $lines ) ; $x++ ) 
+        {
+            $vals = explode( '|', $lines[ $x ] );
+            if ( count( $vals ) != count( $names ) ) 
+            {
                 continue;
             }
-            $result[] = array_combine($names, $vals);
+
+            $result[] = array_combine( $names, $vals );
         }
 
         return $result;

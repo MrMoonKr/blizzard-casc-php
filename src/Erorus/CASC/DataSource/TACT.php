@@ -12,7 +12,8 @@ use Erorus\CASC\Util;
 /**
  * This extracts data from the remote archives on the CDN.
  */
-class TACT extends DataSource {
+class TACT extends DataSource 
+{
     /** @var int Our way to keep track of where various indexes are available. */
     private const LOCATION_NONE = 0;
     private const LOCATION_CACHE = 1;
@@ -51,40 +52,45 @@ class TACT extends DataSource {
      *
      * @throws \Exception
      */
-    public function __construct(
-        Cache $cache,
-        \Iterator $servers,
-        string $cdnPath,
-        array $hashes,
-        ?string $wowPath = null
-    ) {
-        $this->cache   = $cache;
-        $this->servers = $servers;
-        $this->cdnPath = $cdnPath;
+    public function __construct( Cache $cache, \Iterator $servers, string $cdnPath, array $hashes, ?string $wowPath = null ) 
+    {
+        $this->cache    = $cache;
+        $this->servers  = $servers;
+        $this->cdnPath  = $cdnPath;
 
-        if (!is_null($wowPath)) {
-            $wowPath = rtrim($wowPath, DIRECTORY_SEPARATOR);
+        if ( !is_null( $wowPath ) ) 
+        {
+            $wowPath    = rtrim( $wowPath, DIRECTORY_SEPARATOR );
 
-            $this->indexPath = sprintf('%2$s%1$sData%1$sindices', DIRECTORY_SEPARATOR, $wowPath);
-            if (!is_dir($this->indexPath)) {
-                fwrite(STDERR, sprintf("Could not find remote indexes locally at %s\n", $this->indexPath));
+            $this->indexPath = sprintf( '%2$s%1$sData%1$sindices', DIRECTORY_SEPARATOR, $wowPath );
+            if ( !is_dir( $this->indexPath ) ) 
+            {
+                fwrite( STDERR, sprintf( "Could not find remote indexes locally at %s\n", $this->indexPath ) );
                 $this->indexPath = null;
-            } else {
+            } 
+            else 
+            {
                 $this->indexPath .= DIRECTORY_SEPARATOR;
             }
         }
 
-        foreach ($hashes as $hash) {
-            if ($this->indexPath && file_exists($this->indexPath . $hash . '.index')) {
-                $this->indexLocations[$hash] = static::LOCATION_WOW;
-            } elseif ($cache->fileExists(static::buildCacheLocation($hash))) {
-                $this->indexLocations[$hash] = static::LOCATION_CACHE;
-            } else {
-                $this->indexLocations[$hash] = static::LOCATION_NONE;
+        foreach ( $hashes as $hash ) 
+        {
+            if ( $this->indexPath && file_exists( $this->indexPath . $hash . '.index' ) ) 
+            {
+                $this->indexLocations[ $hash ]  = static::LOCATION_WOW;
+            } 
+            elseif ( $cache->fileExists( static::buildCacheLocation( $hash ) ) ) 
+            {
+                $this->indexLocations[ $hash ]  = static::LOCATION_CACHE;
+            } 
+            else 
+            {
+                $this->indexLocations[ $hash ]  = static::LOCATION_NONE;
             }
         }
 
-        arsort($this->indexLocations);
+        arsort( $this->indexLocations );
     }
 
     /**
@@ -94,28 +100,37 @@ class TACT extends DataSource {
      *
      * @return Location|null
      */
-    public function findHashInIndexes(string $hash): ?Location {
+    public function findHashInIndexes( string $hash ) : ?Location 
+    {
         $result = null;
-        foreach ($this->indexLocations as $index => $location) {
-            switch ($location) {
+        foreach ( $this->indexLocations as $index => $location ) 
+        {
+            switch ( $location ) 
+            {
                 case static::LOCATION_WOW:
-                    $result = $this->findHashInIndex($index, $this->indexPath . $index . '.index', $hash);
+                    $result = $this->findHashInIndex( $index, $this->indexPath . $index . '.index', $hash );
                     break;
                 case static::LOCATION_CACHE:
-                    $result = $this->findHashInIndex($index, $this->cache->getFullPath(static::buildCacheLocation($index)), $hash);
+                    $result = $this->findHashInIndex( $index, $this->cache->getFullPath( static::buildCacheLocation( $index ) ), $hash );
                     break;
                 case static::LOCATION_NONE:
-                    if ($this->fetchIndex($index)) {
-                        $result = $this->findHashInIndex($index, $this->cache->getFullPath(static::buildCacheLocation($index)), $hash);
+                    {
+                        if ( $this->fetchIndex( $index ) ) 
+                        {
+                            $result = $this->findHashInIndex( $index, $this->cache->getFullPath( static::buildCacheLocation( $index ) ), $hash );
+                        }
                     }
                     break;
             }
-            if ($result) {
+            if ( $result ) 
+            {
                 break;
             }
         }
-        if (!$result) {
-            $result = $this->findHashOnCDN($hash);
+
+        if ( !$result ) 
+        {
+            $result = $this->findHashOnCDN( $hash );
         }
 
         return $result;
@@ -178,9 +193,11 @@ class TACT extends DataSource {
      * @return bool True on success.
      * @throws \Exception
      */
-    private function fetchIndex(string $hash): bool {
-        $cachePath = static::buildCacheLocation($hash);
-        if ($this->cache->fileExists($cachePath)) {
+    private function fetchIndex( string $hash ) : bool 
+    {
+        $cachePath = static::buildCacheLocation( $hash );
+        if ( $this->cache->fileExists( $cachePath ) ) 
+        {
             return true;
         }
 
@@ -189,27 +206,36 @@ class TACT extends DataSource {
 
         $oldProgressOutput = HTTP::$writeProgressToStream;
         HTTP::$writeProgressToStream = null;
-        $success = false;
-        foreach ($this->servers as $server) {
-            $url = Util::buildTACTUrl($server, $this->cdnPath, 'data', $hash) . '.index';
 
-            $f = $this->cache->getWriteHandle($cachePath);
-            if (is_null($f)) {
-                throw new \Exception("Cannot create write handle for index file at $cachePath\n");
+        $success = false;
+        foreach ( $this->servers as $server ) 
+        {
+            $url = Util::buildTACTUrl( $server, $this->cdnPath, 'data', $hash ) . '.index' ;
+
+            $f = $this->cache->getWriteHandle( $cachePath );
+            if ( is_null( $f ) ) 
+            {
+                throw new \Exception( "Cannot create write handle for index file at $cachePath\n" );
             }
 
-            try {
-                $success = HTTP::get($url, $f);
-            } catch (\Exception $e) {
+            try 
+            {
+                $success = HTTP::get( $url, $f );
+            } 
+            catch ( \Exception $e ) 
+            {
                 echo "\n - " . $e->getMessage() . "\n";
                 $success = false;
             }
 
-            fclose($f);
+            fclose( $f );
 
-            if (!$success) {
-                $this->cache->delete($cachePath);
-            } else {
+            if ( !$success ) 
+            {
+                $this->cache->delete( $cachePath );
+            } 
+            else 
+            {
                 break;
             }
         }
@@ -217,11 +243,12 @@ class TACT extends DataSource {
         HTTP::$writeProgressToStream = $oldProgressOutput;
         echo "\x1B[K";
 
-        if (!$success) {
+        if ( !$success ) 
+        {
             return false;
         }
 
-        $this->indexLocations[$hash] = static::LOCATION_CACHE;
+        $this->indexLocations[ $hash ] = static::LOCATION_CACHE; // 캐시에 저장되었다고 상태값 저장.
 
         return true;
     }
@@ -235,7 +262,8 @@ class TACT extends DataSource {
      *
      * @return TACTLocation|null
      */
-    private function findHashInIndex(string $indexHash, string $indexPath, string $hash): ?TACTLocation {
+    private function findHashInIndex( string $indexHash, string $indexPath, string $hash ): ?TACTLocation 
+    {
         $f = null;
         if (!isset($this->hashMapCache[$indexHash])) {
             $f = $this->populateIndexHashMapCache($indexHash, $indexPath);

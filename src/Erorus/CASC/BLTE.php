@@ -9,7 +9,8 @@ namespace Erorus\CASC;
  *   - a URL wrapper for stream_wrapper_register(), where we write BLTE-encoded data and save it decoded.
  *   - static functions to handle BLTE encryption keys ("TACT keys").
  */
-class BLTE {
+class BLTE 
+{
     /** @var resource|null The current resource context for the stream. */
     public $context;
 

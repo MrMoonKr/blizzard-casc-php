@@ -5,8 +5,9 @@ namespace Erorus\CASC;
 /**
  * This class helps manage a disk cache of various files for this application.
  */
-class Cache {
-    /** @var string The absolute path to the cache directory. */
+class Cache 
+{
+    /** @var string 끝에 경로 구분자 있음. The absolute path to the cache directory. */
     private $cacheRoot = '';
 
     /**
@@ -16,23 +17,28 @@ class Cache {
      *
      * @throws \Exception
      */
-    public function __construct(string $cacheRoot) {
-        $this->cacheRoot = rtrim($cacheRoot, DIRECTORY_SEPARATOR);
+    public function __construct( string $cacheRoot ) 
+    {
+        $this->cacheRoot = rtrim( $cacheRoot, DIRECTORY_SEPARATOR );
 
-        if (!is_dir($this->cacheRoot)) {
-            if (file_exists($this->cacheRoot)) {
-                throw new \Exception(sprintf("Cache path %s already exists as a file. It needs to be a writable directory.\n", $this->cacheRoot));
+        if ( !is_dir( $this->cacheRoot ) )
+        {
+            if ( file_exists( $this->cacheRoot ) ) 
+            {
+                throw new \Exception( sprintf( "Cache path %s already exists as a file. It needs to be a writable directory.\n", $this->cacheRoot ) );
             }
-            if (!mkdir($this->cacheRoot, 0755, true)) {
-                throw new \Exception(sprintf("Cannot create cache path %s\n", $this->cacheRoot));
+            if ( !mkdir( $this->cacheRoot, 0755, true ) ) 
+            {
+                throw new \Exception( sprintf( "Cannot create cache path %s\n", $this->cacheRoot ) );
             }
         }
 
-        if (!is_writable($this->cacheRoot)) {
-            throw new \Exception(sprintf("Cannot write to cache path %s", $this->cacheRoot));
+        if ( !is_writable( $this->cacheRoot ) ) 
+        {
+            throw new \Exception( sprintf( "Cannot write to cache path %s", $this->cacheRoot ) );
         }
 
-        $this->cacheRoot = realpath($this->cacheRoot) . DIRECTORY_SEPARATOR;
+        $this->cacheRoot = realpath( $this->cacheRoot ) . DIRECTORY_SEPARATOR ;
     }
 
     /**
@@ -42,61 +48,72 @@ class Cache {
      *
      * @return bool
      */
-    public function delete(string $path): bool {
-        $fullPath = $this->getFullPath($path);
-        if (file_exists($fullPath)) {
-            return unlink($fullPath);
+    public function delete( string $path ) : bool 
+    {
+        $fullPath = $this->getFullPath( $path );
+        if ( file_exists( $fullPath ) ) 
+        {
+            return unlink( $fullPath );
         }
 
         return false;
     }
 
     /**
+     * 특정 에셋경로로 파일 존재 유무 체크
      * Given a path component, return true when it exists in the cache.
      *
      * @param string $path
      *
      * @return bool
      */
-    public function fileExists(string $path): bool {
-        return file_exists($this->getFullPath($path));
+    public function fileExists( string $path ) : bool 
+    {
+        return file_exists( $this->getFullPath( $path ) );
     }
 
     /**
+     * 수정 시간 조회.
      * Given a path component, return the UNIX timestamp when it was last modified.
      *
      * @param string $path
      *
      * @return int
      */
-    public function fileModified(string $path): int {
-        return filemtime($this->getFullPath($path));
+    public function fileModified( string $path ) : int 
+    {
+        return filemtime( $this->getFullPath( $path ) );
     }
 
     /**
+     * 짧은 에셋경로 부터 로컬 풀경로 얻기
      * Given a path component, return its absolute path in the cache directory.
      *
      * @param string $path
      *
      * @return string
      */
-    public function getFullPath(string $path): string {
-        return $this->cacheRoot . static::sanitizePath($path);
+    public function getFullPath( string $path ) : string 
+    {
+        return $this->cacheRoot . static::sanitizePath( $path );
     }
 
     /**
+     * 주어진 경로로 읽기 전용 파일핸들 얻기.
      * Given a path component, returns a read-only file handle to that existing file in the cache, or null on error.
      *
      * @param string $path
      *
      * @return resource|null
      */
-    public function getReadHandle(string $path) {
-        $fullPath = $this->getFullPath($path);
-        if (file_exists($fullPath)) {
-            $result = fopen($fullPath, 'rb');
+    public function getReadHandle( string $path ) 
+    {
+        $fullPath = $this->getFullPath( $path );
+        if ( file_exists( $fullPath ) ) 
+        {
+            $result = fopen( $fullPath, 'rb' );
 
-            return ($result === false) ? null : $result;
+            return ( $result === false ) ? null : $result;
         }
 
         return null;
@@ -110,21 +127,25 @@ class Cache {
      *
      * @return resource|null
      */
-    public function getWriteHandle(string $path, bool $blte = false) {
-        $fullPath = $this->getFullPath($path);
-        if (file_exists($fullPath)) {
+    public function getWriteHandle( string $path, bool $blte = false ) 
+    {
+        $fullPath = $this->getFullPath( $path );
+        if ( file_exists( $fullPath ) ) 
+        {
             return null;
         }
 
-        Util::assertParentDir($fullPath, 'cache');
+        Util::assertParentDir( $fullPath, 'cache' );
 
-        if ($blte) {
+        if ( $blte ) 
+        {
             $fullPath = 'blte://' . $fullPath;
         }
 
-        $handle = fopen($fullPath, 'xb');
-        if ($handle === false) {
-            fwrite(STDERR, "Cannot write to cache path $fullPath\n");
+        $handle = fopen( $fullPath, 'xb' );
+        if ( $handle === false ) 
+        {
+            fwrite( STDERR, "Cannot write to cache path $fullPath\n" );
 
             return null;
         }
@@ -139,12 +160,14 @@ class Cache {
      *
      * @return null|string
      */
-    public function read(string $path): ?string {
-        $fullPath = $this->getFullPath($path);
-        if (file_exists($fullPath)) {
-            $data = file_get_contents($fullPath);
+    public function read( string $path ) : ?string 
+    {
+        $fullPath = $this->getFullPath( $path );
+        if ( file_exists( $fullPath ) ) 
+        {
+            $data = file_get_contents( $fullPath );
 
-            return ($data === false) ? null : $data;
+            return ( $data === false ) ? null : $data;
         }
 
         return null;
@@ -159,14 +182,15 @@ class Cache {
      *
      * @return int|null
      */
-    public function write(string $path, string $data): ?int {
-        $fullPath = $this->getFullPath($path);
+    public function write( string $path, string $data ) : ?int 
+    {
+        $fullPath = $this->getFullPath( $path );
 
-        Util::assertParentDir($fullPath, 'cache');
+        Util::assertParentDir( $fullPath, 'cache' );
 
-        $result = file_put_contents($fullPath, $data, LOCK_EX);
+        $result = file_put_contents( $fullPath, $data, LOCK_EX );
 
-        return ($result === false) ? null : $result;
+        return ( $result === false ) ? null : $result ;
     }
 
     /**
@@ -176,11 +200,12 @@ class Cache {
      *
      * @return string
      */
-    private static function sanitizePath(string $path): string {
-        $path = str_replace('/', DIRECTORY_SEPARATOR, $path);
+    private static function sanitizePath( string $path ) : string 
+    {
+        $path   = str_replace( '/', DIRECTORY_SEPARATOR, $path );
 
-        $delim = preg_quote(DIRECTORY_SEPARATOR, '#');
+        $delim  = preg_quote( DIRECTORY_SEPARATOR, '#' );
 
-        return preg_replace('#(?:^|' . $delim . ')\.\.(?:' . $delim . '|$)#', DIRECTORY_SEPARATOR, $path);
+        return preg_replace('#(?:^|' . $delim . ')\.\.(?:' . $delim . '|$)#', DIRECTORY_SEPARATOR, $path );
     }
 }

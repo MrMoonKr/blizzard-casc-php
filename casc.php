@@ -24,20 +24,20 @@ function main()
 {
     ini_set('memory_limit', '512M');
 
-    $dest = null;
-    $cachePath = $defaultCachePath = (getHomeDir() ?? __DIR__) . DIRECTORY_SEPARATOR . '.casc-cache';
-    $wowPath = null;
-    $program = 'wow';
-    $region = 'us';
-    $locale = 'enUS';
-    $listfile = '';
+    $dest           = null;
+    $cachePath      = $defaultCachePath = (getHomeDir() ?? __DIR__) . DIRECTORY_SEPARATOR . '.casc-cache';
+    $wowPath        = null;
+    $program        = 'wow';
+    $region         = 'us';
+    $locale         = 'enUS';
+    $listfile       = '';
 
-    $shortOpts = 'o:c:p:r:l:f:w:hi';
-    $longOpts = ['out:','cache:','program:','region:','locale:','files:','wow:', 'help', 'ignore'];
+    $shortOpts      = 'o:c:p:r:l:f:w:hi';
+    $longOpts       = ['out:','cache:','program:','region:','locale:','files:','wow:', 'help', 'ignore'];
 
-    $opts = getopt($shortOpts, $longOpts);
-    foreach ($opts as $k => $v) {
-        switch ($k) {
+    $opts           = getopt( $shortOpts, $longOpts );
+    foreach ( $opts as $k => $v ) {
+        switch ( $k ) {
             case 'h':
             case 'help':
                 printHelp($defaultCachePath);
@@ -77,27 +77,29 @@ function main()
         }
     }
 
-    if (is_null($dest)) {
+    if ( is_null( $dest ) ) {
         echo "Required option 'out' not found, aborting.\n";
-        printHelp($defaultCachePath);
+        printHelp( $defaultCachePath );
         return 1;
     }
 
-    if (is_null($listfile)) {
+    if ( is_null( $listfile ) ) {
         echo "Required option 'files' not found, aborting.\n";
-        printHelp($defaultCachePath);
+        printHelp( $defaultCachePath );
         return 1;
     }
 
-    $dest = rtrim($dest, DIRECTORY_SEPARATOR);
-    if (!is_dir($dest) || !is_writable($dest)) {
-        echo "Out directory $dest is not found/writable, aborting.\n";
-        return 1;
+    $dest = rtrim( $dest, DIRECTORY_SEPARATOR );
+    if ( !is_dir( $dest ) ) {
+        if ( !mkdir( $dest ) && !is_dir( $dest ) ) {
+            echo "Out directory $dest is not found/writable, aborting.\n";
+            return 1;
+        }
     }
 
-    if ($wowPath) {
-        $wowPath = rtrim($wowPath, DIRECTORY_SEPARATOR);
-        if (!is_dir($wowPath)) {
+    if ( $wowPath ) {
+        $wowPath = rtrim( $wowPath, DIRECTORY_SEPARATOR );
+        if ( !is_dir( $wowPath ) ) {
             echo "WoW directory $wowPath is not found, aborting.\n";
             return 1;
         }
@@ -117,9 +119,9 @@ function main()
 
     try 
     {
-        $ngdp = new CASC\NGDP($cachePath, $wowPath, $program, $region, $locale);
+        $ngdp = new CASC\NGDP( $cachePath, $wowPath, $program, $region, $locale );
     } 
-    catch (\Exception $e) 
+    catch ( \Exception $e ) 
     {
         echo $e->getMessage(), "\n";
         return 1;
@@ -176,25 +178,25 @@ function printHelp($cachePath) {
 
     echo <<<EOF
     
-Usage: 
-  php $me --files <path> --out <path> [--wow <path>] [--cache <path>] [--program <wow>] [--region <us>] [--locale <enUS>] [--ignore]
-  php $me --help
+        Usage: 
+        php $me --files <path> --out <path> [--wow <path>] [--cache <path>] [--program <wow>] [--region <us>] [--locale <enUS>] [--ignore]
+        php $me --help
 
--f, --files    Required. Path of a text file listing the files to extract, one per line. 
--o, --out      Required. Destination path for extracted files.
+        -f, --files    Required. Path of a text file listing the files to extract, one per line. 
+        -o, --out      Required. Destination path for extracted files.
 
--w, --wow      Recommended. Path to World of Warcraft's install directory.
+        -w, --wow      Recommended. Path to World of Warcraft's install directory.
 
--c, --cache    Optional. Path for CASC's file cache. [default: $cachePath]
--p, --program  Optional. The NGDP program code (wow, wow_beta, wowt). [default: wow] 
--r, --region   Optional. Region. (us, eu, cn, tw, kr) [default: us]
--l, --locale   Optional. Locale. ($locales) [default: enUS]
--i, --ignore   Optional. Ignore extraction errors (useful to keep partially encrypted files)
+        -c, --cache    Optional. Path for CASC's file cache. [default: $cachePath]
+        -p, --program  Optional. The NGDP program code (wow, wow_beta, wowt). [default: wow] 
+        -r, --region   Optional. Region. (us, eu, cn, tw, kr) [default: us]
+        -l, --locale   Optional. Locale. ($locales) [default: enUS]
+        -i, --ignore   Optional. Ignore extraction errors (useful to keep partially encrypted files)
 
--h, --help     This help message.
+        -h, --help     This help message.
 
-EOF;
+    EOF;
 
 }
 
-exit(main());
+exit( main() );

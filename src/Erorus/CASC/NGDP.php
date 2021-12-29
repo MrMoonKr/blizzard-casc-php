@@ -13,7 +13,8 @@ use Erorus\DB2\Reader;
 /**
  * The main entry point of this library, you instantiate an NGDP object to extract files from CASC/TACT.
  */
-class NGDP {
+class NGDP 
+{
     /** @var Cache Our class to manage our filesystem cache, shared by all parts of this app. */
     private $cache;
 
@@ -37,18 +38,15 @@ class NGDP {
      *
      * @throws \Exception
      */
-    public function __construct(
-        string $cachePath,
-        ?string $wowPath = null,
-        string $program = 'wow',
-        string $region = 'us',
-        string $locale = 'enUS'
-    ) {
-        if (PHP_INT_MAX < 8589934590) {
+    public function __construct( string $cachePath, ?string $wowPath = null, string $program = 'wow', string $region = 'us', string $locale = 'enUS' ) 
+    {
+        if ( PHP_INT_MAX < 8589934590 ) 
+        {
             throw new \Exception("Requires 64-bit PHP");
         }
-        if (!in_array('blte', stream_get_wrappers())) {
-            stream_wrapper_register('blte', BLTE::class);
+        if ( !in_array( 'blte', stream_get_wrappers() ) ) 
+        {
+            stream_wrapper_register( 'blte', BLTE::class );
         }
 
         HTTP::$writeProgressToStream = STDOUT;
@@ -58,14 +56,16 @@ class NGDP {
         // Step 0: Download the latest version config, for CDN hostnames and pointers to this version's other configs.
 
         echo "Loading version config..";
-        $versionConfig = new HTTPVersionConfig($this->cache, $program, $region);
-        $ribbit = new Ribbit($this->cache, $program, $region);
-        if (count($ribbit->getHosts()) >= count($versionConfig->getHosts())) {
+
+        $versionConfig  = new HTTPVersionConfig( $this->cache, $program, $region );
+        $ribbit         = new Ribbit($this->cache, $program, $region);
+
+        if ( count( $ribbit->getHosts() ) >= count( $versionConfig->getHosts() ) ) {
             // We prefer Ribbit results, as long as it has at least as many hostnames.
             $versionConfig = $ribbit;
         }
 
-        if (!count($versionConfig->getHosts())) {
+        if ( !count( $versionConfig->getHosts() ) ) {
             throw new \Exception(sprintf("No hosts from NGDP for program '%s' region '%s'\n", $program, $region));
         }
 
@@ -243,18 +243,23 @@ class NGDP {
      *
      * @return int How many keys we added.
      */
-    private function downloadTactKeys(): int {
+    private function downloadTactKeys() : int 
+    {
         $keys = [];
-        try {
+        try 
+        {
             $list = HTTP::get('https://raw.githubusercontent.com/wowdev/TACTKeys/master/WoW.txt');
-        } catch (\Exception $e) {
+        } 
+        catch ( \Exception $e ) 
+        {
             echo $e->getMessage(), "\n";
 
             return 0;
         }
 
-        $lines = explode("\n", $list);
-        foreach ($lines as $line) {
+        $lines = explode( "\n", $list );
+        foreach ( $lines as $line ) 
+        {
             if (preg_match('/([0-9A-F]{16})\s+([0-9A-F]{32})/i', $line, $match)) {
                 $keys[strrev(hex2bin($match[1]))] = hex2bin($match[2]);
             }

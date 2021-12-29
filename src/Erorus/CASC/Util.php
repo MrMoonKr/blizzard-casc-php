@@ -5,7 +5,8 @@ namespace Erorus\CASC;
 /**
  * Miscellaneous standalone utility functions.
  */
-class Util {
+class Util 
+{
     /**
      * Given a filesystem path, make sure the parent directory of that path exists and is writable.
      *
@@ -14,15 +15,20 @@ class Util {
      *
      * @return bool True when everything is okay, false on error.
      */
-    public static function assertParentDir(string $fullPath, string $type): bool {
-        $parentDir = dirname($fullPath);
-        if (!is_dir($parentDir)) {
-            if (!mkdir($parentDir, 0755, true)) {
-                fwrite(STDERR, "Cannot create $type dir $parentDir\n");
+    public static function assertParentDir( string $fullPath, string $type ) : bool 
+    {
+        $parentDir = dirname( $fullPath );
+        if ( !is_dir( $parentDir ) ) 
+        {
+            if ( !mkdir( $parentDir, 0755, true ) ) 
+            {
+                fwrite( STDERR, "Cannot create $type dir $parentDir\n" );
                 return false;
             }
-        } elseif (!is_writable($parentDir)) {
-            fwrite(STDERR, "Cannot write in $type dir $parentDir\n");
+        } 
+        elseif ( !is_writable( $parentDir ) ) 
+        {
+            fwrite( STDERR, "Cannot write in $type dir $parentDir\n" );
             return false;
         }
 
@@ -30,6 +36,7 @@ class Util {
     }
 
     /**
+     * TACT용 URL 문자열 구성하기.
      * @param string $host     A hostname, or a URL prefix with protocol, host, and path.
      * @param string $cdnPath  A product-specific path component from the versionConfig where we get these assets.
      * @param string $pathType "config" or "data", typically "data".
@@ -37,22 +44,24 @@ class Util {
      *
      * @return string
      */
-    public static function buildTACTUrl(string $host, string $cdnPath, string $pathType, string $hash): string {
-        if (preg_match('/[^0-9a-f]/', $hash)) {
-            throw new \Exception("Invalid hash format: expected lowercase hex!");
+    public static function buildTACTUrl( string $host, string $cdnPath, string $pathType, string $hash ): string 
+    {
+        if ( preg_match( '/[^0-9a-f]/', $hash ) ) // HEX:16 형태인지 체크
+        {
+            throw new \Exception( "Invalid hash format: expected lowercase hex!" );
         }
 
-        if (strpos($host, '://') === false) {
+        if ( strpos( $host, '://' ) === false ) // http:// 없으면 앞쪽에 붙히기
+        {
             $host = "http://{$host}/";
         }
 
-        return sprintf(
-            '%s%s/%s/%s/%s/%s',
+        return sprintf( '%s%s/%s/%s/%s/%s',
             $host,
             $cdnPath,
             $pathType,
-            substr($hash, 0, 2),
-            substr($hash, 2, 2),
+            substr( $hash, 0, 2 ),
+            substr( $hash, 2, 2 ),
             $hash
         );
     }

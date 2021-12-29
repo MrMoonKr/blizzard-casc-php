@@ -16,5 +16,5 @@ abstract class Manifest {
      *
      * @return string|null A content hash, in binary bytes (not hex).
      */
-    abstract public function getContentHash(string $nameOrId, ?string $locale = null): ?string;
+    abstract public function getContentHash( string $nameOrId, ?string $locale = null ) : ?string;
 }

@@ -7,7 +7,8 @@ use Erorus\CASC\DataSource\Location;
 /**
  * Where a piece of content is located in a remote TACT archive.
  */
-class TACT implements Location {
+class TACT implements Location 
+{
     /** @var string Which archive file has the content. */
     public $archive = '';
 
@@ -20,9 +21,12 @@ class TACT implements Location {
     /**
      * @param array $data
      */
-    public function __construct(array $data = []) {
-        foreach ($data as $key => $val) {
-            if (property_exists($this, $key)) {
+    public function __construct( array $data = [] ) 
+    {
+        foreach ( $data as $key => $val ) 
+        {
+            if ( property_exists( $this, $key ) )
+            {
                 $this->{$key} = $val;
             }
         }

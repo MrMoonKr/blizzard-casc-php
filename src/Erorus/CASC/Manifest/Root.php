@@ -12,7 +12,8 @@ use SplFixedArray;
 /**
  * This has the primary method we use to convert most file IDs into content hashes.
  */
-class Root extends Manifest {
+class Root extends Manifest 
+{
     /**
      * Maps locale names we gave to the flags that Blizzard uses.
      */
@@ -85,73 +86,86 @@ class Root extends Manifest {
      *
      * @throws \Exception
      */
-    public function __construct(
-        Cache $cache,
-        \Iterator $servers,
-        string $cdnPath,
-        string $hash,
-        string $defaultLocale = 'enUS'
-    ) {
-        if (!key_exists($defaultLocale, static::LOCALE_FLAGS)) {
-            throw new \Exception("Locale $defaultLocale is not supported\n");
+    public function __construct( Cache $cache, \Iterator $servers, string $cdnPath, string $hash, string $defaultLocale = 'enUS' ) 
+    {
+        if ( !key_exists( $defaultLocale, static::LOCALE_FLAGS ) ) 
+        {
+            throw new \Exception( "Locale $defaultLocale is not supported\n" );
         }
 
         $this->defaultLocale = $defaultLocale;
 
         $cachePath = 'data/' . $hash;
 
-        $f = $cache->getReadHandle($cachePath);
-        if (is_null($f)) {
-            foreach ($servers as $server) {
-                $f = $cache->getWriteHandle($cachePath, true);
-                if (is_null($f)) {
+        $f = $cache->getReadHandle( $cachePath );
+        if ( is_null( $f ) ) 
+        {
+            foreach ( $servers as $server ) 
+            {
+                $f = $cache->getWriteHandle( $cachePath, true );
+                if ( is_null( $f ) ) 
+                {
                     throw new \Exception("Cannot create temp buffer for root data\n");
                 }
 
-                $url = Util::buildTACTUrl($server, $cdnPath, 'data', $hash);
-                try {
-                    $success = HTTP::get($url, $f);
-                } catch (BLTE\Exception $e) {
+                $url = Util::buildTACTUrl( $server, $cdnPath, 'data', $hash );
+                try 
+                {
+                    $success = HTTP::get( $url, $f );
+                } 
+                catch ( BLTE\Exception $e ) 
+                {
                     $success = false;
-                } catch (\Exception $e) {
+                } 
+                catch ( \Exception $e ) 
+                {
                     echo "\n - " . $e->getMessage() . " ";
                     $success = false;
                 }
-                if (!$success) {
-                    fclose($f);
-                    $cache->delete($cachePath);
+
+                if ( !$success ) 
+                {
+                    fclose( $f );
+                    $cache->delete( $cachePath );
                     continue;
                 }
-                fclose($f);
-                $f = $cache->getReadHandle($cachePath);
+
+                fclose( $f );
+                $f = $cache->getReadHandle( $cachePath );
                 break;
             }
-            if (!$success) {
-                throw new \Exception("Could not fetch root data at $url\n");
+
+            if ( !$success ) 
+            {
+                throw new \Exception( "Could not fetch root data at $url\n" );
             }
         }
 
-        $stat = fstat($f);
-        $this->fileSize = $stat['size'];
-        $this->fileHandle = $f;
+        $stat               = fstat( $f );
+        $this->fileSize     = $stat['size'];
+        $this->fileHandle   = $f;
 
-        fseek($this->fileHandle, 0);
-        $sig = fread($this->fileHandle, 4);
-        if ($sig !== 'TSFM') {
-            $this->allowNonNamedFiles = false;
-            $this->useOldRecordFormat = true;
-        } else {
-            [$countTotal, $countWithNameHash] = array_values(unpack('l*', fread($this->fileHandle, 8)));
-            $this->allowNonNamedFiles = $countTotal !== $countWithNameHash;
-            $this->useOldRecordFormat = false;
+        fseek( $this->fileHandle, 0 );
+        $sig = fread( $this->fileHandle, 4 );
+        if ( $sig !== 'TSFM' ) 
+        {
+            $this->allowNonNamedFiles           = false;
+            $this->useOldRecordFormat           = true;
+        } 
+        else 
+        {
+            [$countTotal, $countWithNameHash]   = array_values( unpack( 'l*', fread( $this->fileHandle, 8 ) ) );
+            $this->allowNonNamedFiles           = $countTotal !== $countWithNameHash;
+            $this->useOldRecordFormat           = false;
         }
-   }
+    }
 
     /**
      * Close the open file handle.
      */
-    public function __destruct() {
-        fclose($this->fileHandle);
+    public function __destruct() 
+    {
+        fclose( $this->fileHandle );
     }
 
     /**
@@ -163,37 +177,45 @@ class Root extends Manifest {
      *
      * @return string|null A content hash, in binary bytes (not hex).
      */
-    public function getContentHash(string $nameOrId, ?string $locale = null): ?string {
-        if (is_null($locale) || !key_exists($locale, static::LOCALE_FLAGS)) {
+    public function getContentHash( string $nameOrId, ?string $locale = null ) : ?string 
+    {
+        if ( is_null( $locale ) || !key_exists( $locale, static::LOCALE_FLAGS ) ) 
+        {
             $locale = $this->defaultLocale;
         }
-        $locale = static::LOCALE_FLAGS[$locale];
 
-        $hashedName = static::jenkins_hashlittle2(strtoupper(str_replace('/', '\\', $nameOrId)));
+        $locale     = static::LOCALE_FLAGS[$locale];
 
-        fseek($this->fileHandle, $this->useOldRecordFormat ? 0 : self::FILE_HEADER_LENGTH);
+        $hashedName = static::jenkins_hashlittle2( strtoupper( str_replace( '/', '\\', $nameOrId ) ) );
+
+        fseek( $this->fileHandle, $this->useOldRecordFormat ? 0 : self::FILE_HEADER_LENGTH );
 
         $blockId = -1;
-        while (ftell($this->fileHandle) < $this->fileSize) {
+        while ( ftell( $this->fileHandle ) < $this->fileSize ) 
+        {
             $blockId++;
 
             // Read the block header.
-            [$numRec, $flags, $blockLocale] = array_values(unpack('lnumrec/Vflags/Vlocale', fread($this->fileHandle, 12)));
+            [ $numRec, $flags, $blockLocale ] = array_values( unpack( 'lnumrec/Vflags/Vlocale', fread( $this->fileHandle, 12 ) ) );
 
-            $blockHasNameHashes = !($this->allowNonNamedFiles && ($flags & self::FLAG_NO_NAME_HASH));
+            $blockHasNameHashes = !( $this->allowNonNamedFiles && ( $flags & self::FLAG_NO_NAME_HASH ) );
 
             // Calculate how many bytes remain in this block, in case we need to skip past it.
-            $blockDataLength = $numRec * self::FILE_ID_LENGTH + $numRec * self::CONTENT_HASH_LENGTH;
-            if ($blockHasNameHashes) {
+            $blockDataLength    = $numRec * self::FILE_ID_LENGTH + $numRec * self::CONTENT_HASH_LENGTH;
+            if ( $blockHasNameHashes ) 
+            {
                 $blockDataLength += $numRec * self::NAME_HASH_LENGTH;
             }
 
-            if (($blockLocale & $locale) !== $locale) {
+            if (($blockLocale & $locale) !== $locale) 
+            {
                 // This block doesn't support the locale we're using. Skip it.
                 fseek($this->fileHandle, $blockDataLength, SEEK_CUR);
                 continue;
             }
-            if (!isset($this->blockCache[$blockId])) {
+
+            if (!isset($this->blockCache[$blockId])) 
+            {
                 // We haven't read this block yet. Do so, and cache it.
                 $fileDataIds = [];
                 $nameHashes = [];
@@ -204,10 +226,12 @@ class Root extends Manifest {
                     false
                 );
 
-                if ($this->useOldRecordFormat) {
+                if ( $this->useOldRecordFormat ) 
+                {
                     // Legacy format: each record is a content hash and a name hash.
                     $recLength = static::CONTENT_HASH_LENGTH + static::NAME_HASH_LENGTH;
 
+                    $chunkSize = 0;
                     $prevId = -1;
                     for ($chunkOffset = 0; $chunkOffset < $numRec; $chunkOffset += $chunkSize) {
                         $chunkSize = min(static::CHUNK_RECORD_COUNT, $numRec - $chunkOffset);
@@ -227,8 +251,11 @@ class Root extends Manifest {
                         }
                         unset($data);
                     }
-                } else {
+                } 
+                else 
+                {
                     // Modern format: a list of content hashes, and then a list of name hashes (if flagged with such).
+                    $chunkSize = 0;
                     $prevId = -1;
                     for ($chunkOffset = 0; $chunkOffset < $numRec; $chunkOffset += $chunkSize) {
                         $chunkSize = min(static::CHUNK_RECORD_COUNT, $numRec - $chunkOffset);
@@ -270,18 +297,22 @@ class Root extends Manifest {
 
                 unset($deltas);
                 $this->blockCache[$blockId] = [$fileDataIds, $nameHashes];
-            } else {
+            } 
+            else 
+            {
                 // We can get the data from our block cache. Do that, and skip ahead to the next block.
                 [$fileDataIds, $nameHashes] = $this->blockCache[$blockId];
-                fseek($this->fileHandle, $blockDataLength, SEEK_CUR);
+                fseek( $this->fileHandle, $blockDataLength, SEEK_CUR );
             }
 
-            if (isset($fileDataIds[$nameOrId])) {
-                return $fileDataIds[$nameOrId];
+            if ( isset( $fileDataIds[ $nameOrId ] ) ) 
+            {
+                return $fileDataIds[ $nameOrId ];
             }
 
-            if (isset($nameHashes[$hashedName])) {
-                return $nameHashes[$hashedName];
+            if ( isset( $nameHashes[ $hashedName ] ) ) 
+            {
+                return $nameHashes[ $hashedName ];
             }
         }
 
@@ -295,7 +326,8 @@ class Root extends Manifest {
      *
      * @return string
      */
-    private static function jenkins_hashlittle2(string $txt): string {
+    private static function jenkins_hashlittle2( string $txt ) : string 
+    {
         $Rot = function($x,$k) {
             return 0xFFFFFFFF & ((($x)<<($k)) | (($x)>>(32-($k))));
         };
