@@ -3,11 +3,12 @@
 namespace Erorus\CASC;
 
 /**
+ * 로컬에 캐싱된 파일들 관리자.
  * This class helps manage a disk cache of various files for this application.
  */
 class Cache 
 {
-    /** @var string 끝에 경로 구분자 있음. The absolute path to the cache directory. */
+    /** @var string 저장용 디렉토리 절대경로. 끝에 경로 구분자 있음. The absolute path to the cache directory. */
     private $cacheRoot = '';
 
     /**

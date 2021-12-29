@@ -51,14 +51,14 @@ class NGDP
 
         HTTP::$writeProgressToStream = STDOUT;
 
-        $this->cache = new Cache($cachePath);
+        $this->cache = new Cache( $cachePath );
 
         // Step 0: Download the latest version config, for CDN hostnames and pointers to this version's other configs.
 
         echo "Loading version config..";
 
         $versionConfig  = new HTTPVersionConfig( $this->cache, $program, $region );
-        $ribbit         = new Ribbit($this->cache, $program, $region);
+        $ribbit         = new Ribbit( $this->cache, $program, $region );
 
         if ( count( $ribbit->getHosts() ) >= count( $versionConfig->getHosts() ) ) {
             // We prefer Ribbit results, as long as it has at least as many hostnames.

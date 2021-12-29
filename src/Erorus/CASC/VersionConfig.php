@@ -7,7 +7,8 @@ use Iterator;
 /**
  * Fetches and manages CDN and version configuration data obtained from Ribbit (or legacy HTTP).
  */
-abstract class VersionConfig {
+abstract class VersionConfig 
+{
     /** @var int To protect against querying Ribbit unnecessarily, we cache the responses and consider them fresh
      *           for this many seconds after fetch.
      */
@@ -51,24 +52,27 @@ abstract class VersionConfig {
      * @param string $program The TACT product code.
      * @param string $region The region, as defined in the version config column. One of: us, eu, cn, tw, kr
      */
-    public function __construct(Cache $cache, string $program = 'wow', string $region = 'us') {
-        $this->cache = $cache;
+    public function __construct( Cache $cache, string $program = 'wow', string $region = 'us' ) 
+    {
+        $this->cache    = $cache;
 
-        $this->program = strtolower($program);
-        $this->region = strtolower($region);
+        $this->program  = strtolower($program);
+        $this->region   = strtolower($region);
     }
 
     /**
      * @return string The TACT product code.
      */
-    public function getProgram(): string {
+    public function getProgram(): string 
+    {
         return $this->program;
     }
 
     /**
      * @return string The region code.
      */
-    public function getRegion(): string {
+    public function getRegion(): string 
+    {
         return strtoupper($this->region);
     }
 
@@ -77,8 +81,10 @@ abstract class VersionConfig {
     /**
      * @return string A path component, without leading or trailing slashes.
      */
-    public function getCDNPath(): string {
-        if (!$this->cdnPath) {
+    public function getCDNPath() : string 
+    {
+        if ( !$this->cdnPath ) 
+        {
             $this->getCDNs();
         }
 
@@ -88,8 +94,10 @@ abstract class VersionConfig {
     /**
      * @return Iterator A list of CDN hostnames.
      */
-    public function getHosts(): Iterator {
-        if (!$this->hosts) {
+    public function getHosts() : Iterator 
+    {
+        if ( !$this->hosts ) 
+        {
             $this->getCDNs();
         }
 
@@ -99,8 +107,10 @@ abstract class VersionConfig {
     /**
      * @return Iterator A list of CDN URL prefixes, e.g. ["http://cdn.example.com/"]
      */
-    public function getServers(): Iterator {
-        if (!$this->servers) {
+    public function getServers() : Iterator 
+    {
+        if ( !$this->servers ) 
+        {
             $this->getCDNs();
         }
 
@@ -172,13 +182,16 @@ abstract class VersionConfig {
      *
      * @return string|null
      */
-    abstract protected function getTACTData(string $file): ?string;
+    abstract protected function getTACTData( string $file ) : ?string;
 
     /**
      * Fetches and parses the CDNs version file into the properties of this object.
      */
     private function getCDNs() : void 
     {
+        $cdnsData       = $this->getTACTData( 'cdns' );
+        $cdnsRecords    = $this->parseVersionCsv( $cdnsData );
+
         foreach ( $this->parseVersionCsv( $this->getTACTData('cdns') ?? '' ) as $row ) 
         {
             if ( !isset( $row['name'] ) ) 

@@ -43,8 +43,12 @@ class Ribbit extends VersionConfig
 
             fwrite( $handle, $command );
 
+            //$ribbitData = fgets( $handle, 8096 );
+
             $parser     = new MailMimeParser();
             $message    = $parser->parse( $handle, null );
+
+            //$ribbitData = $message->getTextContent();
 
             fclose( $handle );
 
@@ -61,6 +65,9 @@ class Ribbit extends VersionConfig
                 $data = $attachment->getContent();
                 break;
             }
+
+            $ribbitData = $message->getTextContent();
+            $data = $ribbitData ; // just hack
         }
 
         if ( $data ) 

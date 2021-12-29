@@ -4,7 +4,8 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Erorus\CASC;
 
-function getHomeDir() {
+function getHomeDir() 
+{
     $home = getenv('HOME');
     if (!empty($home)) {
         // home should never end with a trailing slash.
@@ -36,7 +37,8 @@ function main()
     $longOpts       = ['out:','cache:','program:','region:','locale:','files:','wow:', 'help', 'ignore'];
 
     $opts           = getopt( $shortOpts, $longOpts );
-    foreach ( $opts as $k => $v ) {
+    foreach ( $opts as $k => $v ) 
+    {
         switch ( $k ) {
             case 'h':
             case 'help':
@@ -77,42 +79,49 @@ function main()
         }
     }
 
-    if ( is_null( $dest ) ) {
+    if ( is_null( $dest ) ) 
+    {
         echo "Required option 'out' not found, aborting.\n";
         printHelp( $defaultCachePath );
         return 1;
     }
 
-    if ( is_null( $listfile ) ) {
+    if ( is_null( $listfile ) ) 
+    {
         echo "Required option 'files' not found, aborting.\n";
         printHelp( $defaultCachePath );
         return 1;
     }
 
     $dest = rtrim( $dest, DIRECTORY_SEPARATOR );
-    if ( !is_dir( $dest ) ) {
-        if ( !mkdir( $dest ) && !is_dir( $dest ) ) {
+    if ( !is_dir( $dest ) ) 
+    {
+        if ( !mkdir( $dest ) && !is_dir( $dest ) ) 
+        {
             echo "Out directory $dest is not found/writable, aborting.\n";
             return 1;
         }
     }
 
-    if ( $wowPath ) {
+    if ( $wowPath ) 
+    {
         $wowPath = rtrim( $wowPath, DIRECTORY_SEPARATOR );
-        if ( !is_dir( $wowPath ) ) {
+        if ( !is_dir( $wowPath ) ) 
+        {
             echo "WoW directory $wowPath is not found, aborting.\n";
             return 1;
         }
     }
 
-    $cachePath = rtrim($cachePath, DIRECTORY_SEPARATOR);
+    $cachePath = rtrim( $cachePath, DIRECTORY_SEPARATOR );
 
-    if (!file_exists($listfile) || !is_readable($listfile)) {
+    if ( !file_exists( $listfile ) || !is_readable( $listfile ) ) 
+    {
         echo "Files list $listfile is not readable, aborting.\n";
         return 1;
     }
 
-    $files = file($listfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    $files = file( $listfile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
 
     echo "Output dir: $dest\n";
     echo "Cache dir: $cachePath\n";
@@ -129,32 +138,38 @@ function main()
 
     echo "\n";
 
-    $successCount = 0;
-    $totalCount = 0;
+    $successCount   = 0;
+    $totalCount     = 0;
 
-    foreach ($files as $file) {
-        $file = trim($file);
-        if (!$file) {
+    foreach ( $files as $file ) 
+    {
+        $file = trim( $file );
+        if ( !$file ) 
+        {
             continue;
         }
 
-        if (preg_match('/^(\d+)\W*([\w\W]+)$/', $file, $res)) {
-            $destName = $res[2];
-            $file = $res[1];
-        } else {
-            $destName = $file;
+        if ( preg_match( '/^(\d+)\W*([\w\W]+)$/', $file, $res ) ) 
+        {
+            $destName   = $res[2];
+            $file       = $res[1];
+        } 
+        else 
+        {
+            $destName   = $file;
         }
-        $slash = DIRECTORY_SEPARATOR;
-        $destPath = $dest . $slash . strtr($destName, ['/' => $slash, '\\' => $slash]);
+
+        $slash      = DIRECTORY_SEPARATOR;
+        $destPath   = $dest . $slash . strtr( $destName, ['/' => $slash, '\\' => $slash] );
 
         $totalCount++;
         echo $destName;
 
-        $success = $ngdp->fetchFile($file, $destPath);
+        $success    = $ngdp->fetchFile( $file, $destPath );
         $successCount += $success ? 1 : 0;
 
-        $success = $success ? sprintf('OK (%s)', $success) : 'Failed';
-        echo sprintf(" -> %s\n", $success);
+        $success    = $success ? sprintf('OK (%s)', $success) : 'Failed';
+        echo sprintf( " -> %s\n", $success );
     }
 
     echo "\n";
@@ -167,16 +182,17 @@ function main()
     return $successCount > 0 ? 1 : 0;
 }
 
-function printHelp($cachePath) {
+function printHelp( $cachePath ) 
+{
     global $argv;
 
     $me = $argv[0];
 
     $locales = CASC\Manifest\Root::LOCALE_FLAGS;
-    ksort($locales);
-    $locales = implode(", ", array_keys($locales));
+    ksort( $locales );
+    $locales = implode( ", ", array_keys( $locales ) );
 
-    echo <<<EOF
+    echo <<< EOF
     
         Usage: 
         php $me --files <path> --out <path> [--wow <path>] [--cache <path>] [--program <wow>] [--region <us>] [--locale <enUS>] [--ignore]
@@ -198,5 +214,8 @@ function printHelp($cachePath) {
     EOF;
 
 }
+
+$defaultCachePath = (getHomeDir() ?? __DIR__) . DIRECTORY_SEPARATOR . '.casc-cache';
+printHelp( $defaultCachePath );
 
 exit( main() );

@@ -13,9 +13,10 @@
             "cwd": "${workspaceFolder}", //"${fileDirname}",
             "runtimeExecutable": "C:\\WinNMP\\bin\\php.bat",
             "args": [
-                "--files", "dbcs.test.txt",
-                "--out" , "${workspaceFolder}\\out",
-                "--wow", "F:\\myGames\\World of Warcraft"
+                "--files"   , "dbcs.test.txt",
+                "--out"     , "${workspaceFolder}\\out",
+                "--cache"   , "${workspaceFolder}\\cache",
+                "--wow"     , "F:\\myGames\\World of Warcraft"
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes"
@@ -34,9 +35,10 @@
             "port": 9000,
             "runtimeExecutable": "C:\\WinNMP\\bin\\php.bat",
             "args": [
-                "--files", "dbcs.test.txt",
-                "--out" , "${workspaceFolder}\\out",
-                "--wow", "F:\\myGames\\World of Warcraft"
+                "--files"   , "dbcs.test.txt",
+                "--out"     , "${workspaceFolder}\\out",
+                "--wow"     , "F:\\myGames\\World of Warcraft",
+                "--cache"   , "${workspaceFolder}\\cache",
             ],
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes"
