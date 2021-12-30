@@ -60,17 +60,21 @@ class NGDP
         $versionConfig  = new HTTPVersionConfig( $this->cache, $program, $region );
         $ribbit         = new Ribbit( $this->cache, $program, $region );
 
-        if ( count( $ribbit->getHosts() ) >= count( $versionConfig->getHosts() ) ) {
+        $ribbitHosts    = $ribbit->getHosts();
+        $tactHosts      = $versionConfig->getHosts();
+
+        if ( count( $ribbit->getHosts() ) >= count( $versionConfig->getHosts() ) ) 
+        {
             // We prefer Ribbit results, as long as it has at least as many hostnames.
             $versionConfig = $ribbit;
         }
 
-        if ( !count( $versionConfig->getHosts() ) ) {
-            throw new \Exception(sprintf("No hosts from NGDP for program '%s' region '%s'\n", $program, $region));
+        if ( !count( $versionConfig->getHosts() ) ) 
+        {
+            throw new \Exception( sprintf( "No hosts from NGDP for program '%s' region '%s'\n", $program, $region ) );
         }
 
-        echo sprintf(
-            " %s %s version %s\n",
+        echo sprintf( " %s %s version %s\n",
             $versionConfig->getRegion(),
             $versionConfig->getProgram(),
             $versionConfig->getVersion()
@@ -79,20 +83,22 @@ class NGDP
         // Step 1: Download the build config, using the servers and file hash from version config.
 
         echo "Loading build config..";
-        $buildConfig = new Config(
-            $this->cache,
-            $versionConfig->getServers(),
-            $versionConfig->getCDNPath(),
-            $versionConfig->getBuildConfig()
-        );
-        if (!isset($buildConfig->encoding[1])) {
-            throw new \Exception("Could not find encoding value in build config\n");
+        $buildConfig = new Config( $this->cache, 
+                                   $versionConfig->getServers(), 
+                                   $versionConfig->getCDNPath(),
+                                   $versionConfig->getBuildConfig() );
+
+        if ( !isset( $buildConfig->encoding[1] ) ) 
+        {
+            throw new \Exception( "Could not find encoding value in build config\n" );
         }
-        if (!isset($buildConfig->root[0])) {
-            throw new \Exception("Could not find root value in build config\n");
+        if ( !isset( $buildConfig->root[0] ) ) 
+        {
+            throw new \Exception( "Could not find root value in build config\n" );
         }
-        if (!isset($buildConfig->install[0])) {
-            throw new \Exception("Could not find install value in build config\n");
+        if ( !isset( $buildConfig->install[0] ) ) 
+        {
+            throw new \Exception( "Could not find install value in build config\n" );
         }
         echo "\n";
 
@@ -102,28 +108,30 @@ class NGDP
 
         echo "Loading encoding..";
         $this->encoding = null;
-        if (isset($buildConfig->encoding[1])) {
-            try {
-                $this->encoding = new Encoding(
-                    $this->cache,
-                    $versionConfig->getServers(),
-                    $versionConfig->getCDNPath(),
-                    $buildConfig->encoding[1],
-                    true
-                );
-            } catch (\Exception $e) {
+        if ( isset( $buildConfig->encoding[1] ) ) 
+        {
+            try 
+            {
+                $this->encoding = new Encoding( $this->cache,
+                                                $versionConfig->getServers(),
+                                                $versionConfig->getCDNPath(),
+                                                $buildConfig->encoding[1],
+                                                true );
+            } 
+            catch ( \Exception $e ) 
+            {
                 $this->encoding = null;
                 echo " failed. Trying alternate..";
             }
         }
-        if (is_null($this->encoding)) {
-            $this->encoding = new Encoding(
-                $this->cache,
-                $versionConfig->getServers(),
-                $versionConfig->getCDNPath(),
-                $buildConfig->encoding[0],
-                false
-            );
+
+        if ( is_null( $this->encoding ) ) 
+        {
+            $this->encoding = new Encoding( $this->cache,
+                                            $versionConfig->getServers(),
+                                            $versionConfig->getCDNPath(),
+                                            $buildConfig->encoding[0],
+                                            false );
         }
         echo "\n";
 
@@ -202,11 +210,14 @@ class NGDP
         // Step 8: Try to download and parse WoW's TACT key DB2 file, so we're up-to-date on all the encryption keys.
 
         echo "Loading encryption keys..";
-        try {
+        try 
+        {
             $added = $this->fetchTactKey();
             $added += $this->downloadTactKeys();
             echo sprintf(" OK (+%d)\n", $added);
-        } catch (\Exception $e) {
+        } 
+        catch ( \Exception $e ) 
+        {
             echo " Failed: ", $e->getMessage(), "\n";
         }
 

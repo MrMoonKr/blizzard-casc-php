@@ -29,7 +29,7 @@ function main()
     $cachePath      = $defaultCachePath = (getHomeDir() ?? __DIR__) . DIRECTORY_SEPARATOR . '.casc-cache';
     $wowPath        = null;
     $program        = 'wow';
-    $region         = 'us';
+    $region         = 'kr';
     $locale         = 'enUS';
     $listfile       = '';
 
@@ -215,7 +215,7 @@ function printHelp( $cachePath )
 
 }
 
-$defaultCachePath = (getHomeDir() ?? __DIR__) . DIRECTORY_SEPARATOR . '.casc-cache';
-printHelp( $defaultCachePath );
+//$defaultCachePath = ( getHomeDir() ?? __DIR__ ) . DIRECTORY_SEPARATOR . '.casc-cache';
+//printHelp( $defaultCachePath );
 
 exit( main() );

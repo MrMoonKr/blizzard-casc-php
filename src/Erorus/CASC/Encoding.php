@@ -7,7 +7,8 @@ use Erorus\CASC\Encoding\ContentMap;
 /**
  * This is where we map content hashes to encoding hashes, which are themselves used as keys in the DataSource.
  */
-class Encoding {
+class Encoding 
+{
     /** @var int How many bytes into a content table entry you find the start of the content hash. */
     private const CONTENT_TABLE_ENTRY_CONTENT_HASH_OFFSET = 6;
 
@@ -37,43 +38,58 @@ class Encoding {
      *
      * @throws \Exception
      */
-    public function __construct(Cache $cache, \Iterator $servers, string $cdnPath, string $hash, bool $isBLTE) {
+    public function __construct( Cache $cache, \Iterator $servers, string $cdnPath, string $hash, bool $isBLTE ) 
+    {
         $cachePath = 'data/' . $hash;
 
-        $f = $cache->getReadHandle($cachePath);
-        if (is_null($f)) {
-            foreach ($servers as $server) {
-                $f = $cache->getWriteHandle($cachePath, $isBLTE);
-                if (is_null($f)) {
+        $f = $cache->getReadHandle( $cachePath );
+        if ( is_null( $f ) ) 
+        {
+            foreach ( $servers as $server ) 
+            {
+                $f = $cache->getWriteHandle( $cachePath, $isBLTE );
+                if ( is_null( $f ) ) 
+                {
                     throw new \Exception("Cannot create cache location for encoding data\n");
                 }
 
-                $url = Util::buildTACTUrl($server, $cdnPath, 'data', $hash);
-                try {
-                    $success = HTTP::get($url, $f);
-                } catch (BLTE\Exception $e) {
+                $url = Util::buildTACTUrl( $server, $cdnPath, 'data', $hash );
+                try 
+                {
+                    $success = HTTP::get( $url, $f );
+                } 
+                catch ( BLTE\Exception $e ) 
+                {
                     $success = false;
-                } catch (\Exception $e) {
+                } 
+                catch ( \Exception $e ) 
+                {
                     echo "\n - " . $e->getMessage() . " ";
                     $success = false;
                 }
-                if (!$success) {
-                    fclose($f);
-                    $cache->delete($cachePath);
+
+                if ( !$success ) 
+                {
+                    fclose( $f );
+                    $cache->delete( $cachePath );
                     continue;
                 }
-                fclose($f);
-                $f = $cache->getReadHandle($cachePath);
+
+                fclose( $f );
+                $f = $cache->getReadHandle( $cachePath );
                 break;
             }
-            if (!$success) {
-                throw new \Exception("Could not fetch encoding data at $url\n");
+
+            if ( !$success ) 
+            {
+                throw new \Exception( "Could not fetch encoding data at $url\n" );
             }
         }
 
-        if (fread($f, 2) != 'EN') {
-            fclose($f);
-            throw new \Exception("Encoding file did not have expected header\n");
+        if ( fread( $f, 2 ) != 'EN' ) 
+        {
+            fclose( $f );
+            throw new \Exception( "Encoding file did not have expected header\n" );
         }
 
         $headerFormat = [
@@ -88,10 +104,10 @@ class Encoding {
             'NstringBlockSize',
         ];
 
-        $this->header = unpack(implode('/', $headerFormat), fread($f, 20));
+        $this->header = unpack( implode( '/', $headerFormat ), fread( $f, 20 ) );
 
         // Skip string block, only used in encoding spec table.
-        fseek($f, $this->header['stringBlockSize'], SEEK_CUR);
+        fseek( $f, $this->header['stringBlockSize'], SEEK_CUR );
 
         // Skip content table index.
         $indexEntrySize = $this->header['contentHashSize'] + self::INDEX_ENTRY_DATA_LENGTH;
@@ -120,8 +136,9 @@ class Encoding {
     /**
      * Closes the file handle when destructing the object.
      */
-    public function __destruct() {
-        fclose($this->fileHandle);
+    public function __destruct() 
+    {
+        fclose( $this->fileHandle );
     }
 
     /**
@@ -131,16 +148,18 @@ class Encoding {
      *
      * @return ContentMap|null
      */
-    public function getContentMap(string $contentHash): ?ContentMap {
-        $idx = $this->findInMap($contentHash);
-        if ($idx < 0) {
+    public function getContentMap( string $contentHash ) : ?ContentMap 
+    {
+        $idx = $this->findInMap( $contentHash );
+        if ( $idx < 0 ) 
+        {
             return null;
         }
 
         $pageSize = $this->header['contentTableSizeKb'] * 1024;
-        fseek($this->fileHandle, $this->entryStart + $idx * $pageSize);
+        fseek( $this->fileHandle, $this->entryStart + $idx * $pageSize );
 
-        return $this->findContentMapInPage($contentHash, fread($this->fileHandle, $pageSize));
+        return $this->findContentMapInPage( $contentHash, fread( $this->fileHandle, $pageSize ) );
     }
 
     /**
@@ -151,11 +170,14 @@ class Encoding {
      *
      * @return ContentMap|null
      */
-    private function findContentMapInPage(string $contentHash, string $pageBytes): ?ContentMap {
+    private function findContentMapInPage( string $contentHash, string $pageBytes ) : ?ContentMap 
+    {
         $pos = 0;
-        while ($pos < strlen($pageBytes)) {
-            $keyCount = ord(substr($pageBytes, $pos++, 1));
-            if ($keyCount == 0) {
+        while ( $pos < strlen( $pageBytes ) ) 
+        {
+            $keyCount = ord( substr( $pageBytes, $pos++, 1 ) );
+            if ( $keyCount == 0 ) 
+            {
                 break;
             }
 
@@ -196,7 +218,8 @@ class Encoding {
      *
      * @return int
      */
-    private function findInMap(string $needle): int {
+    private function findInMap( string $needle ) : int 
+    {
         $map = $this->entryMap;
 
         $lo = 0;
