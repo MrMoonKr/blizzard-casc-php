@@ -60,8 +60,8 @@ class NGDP
         $versionConfig  = new HTTPVersionConfig( $this->cache, $program, $region );
         $ribbit         = new Ribbit( $this->cache, $program, $region );
 
-        $ribbitHosts    = $ribbit->getHosts();
-        $tactHosts      = $versionConfig->getHosts();
+        //$ribbitHosts    = $ribbit->getHosts();
+        //$tactHosts      = $versionConfig->getHosts();
 
         if ( count( $ribbit->getHosts() ) >= count( $versionConfig->getHosts() ) ) 
         {
@@ -79,6 +79,11 @@ class NGDP
             $versionConfig->getProgram(),
             $versionConfig->getVersion()
         );
+
+        $tactHosts      = $versionConfig->getHosts() ;
+        $tactServers    = $versionConfig->getServers() ;
+        $tactCdnPath    = $versionConfig->getCDNPath() ;
+        $tactBuildHash  = $versionConfig->getBuildConfig() ;
 
         // Step 1: Download the build config, using the servers and file hash from version config.
 
@@ -390,10 +395,13 @@ class NGDP
      *
      * @return string|null
      */
-    private function getContentHash(string $file, ?string $locale = null): ?string {
+    private function getContentHash( string $file, ?string $locale = null ) : ?string 
+    {
         $contentHash = null;
-        foreach ($this->nameSources as $nameSourceName => $nameSource) {
-            if ($contentHash = $nameSource->getContentHash($file, $locale)) {
+        foreach ( $this->nameSources as $nameSourceName => $nameSource ) 
+        {
+            if ( $contentHash = $nameSource->getContentHash( $file, $locale ) ) 
+            {
                 break;
             }
         }
